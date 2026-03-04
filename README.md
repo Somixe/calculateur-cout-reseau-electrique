@@ -6,11 +6,12 @@ Il s’agit d’une **application en Java permettant de modéliser, de visualise
 
 ## Captures d’écran
 
-
-<img src="ressources/capture_ecran/configuration_capture_ecran.png" width="400" />
-<img src="ressources/capture_ecran/gestion_reseau_capture_ecran.png" width="400" />
-<img src="ressources/capture_ecran/ajout_generateur_capture_ecran.png" width="400" />
-<img src="ressources/capture_ecran/affichage_reseau_capture_ecran.png" width="400" />
+<div style="display: flex-wrap: wrap-row;">
+  <img src="ressources/capture_ecran/configuration_capture_ecran.png" width="400" />
+  <img src="ressources/capture_ecran/gestion_reseau_capture_ecran.png" width="400" />
+  <img src="ressources/capture_ecran/ajout_generateur_capture_ecran.png" width="400" />
+  <img src="ressources/capture_ecran/affichage_reseau_capture_ecran.png" width="400" 
+</div>
 
 ## Arborescence du projet
 ```
@@ -108,6 +109,9 @@ open doc/index.html
 # Linux
 xdg-open doc/index.html
 ```
+La documentation complète des fonctions et du projet est également disponible en ligne via **GitHub Pages** :  
+[https://somixe.github.io/TraceX/](https://somixe.github.io/TraceX/)  
+
 ---
 
 ## Tests
