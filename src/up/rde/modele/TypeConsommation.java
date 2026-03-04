@@ -1,75 +1,56 @@
+
+// ENUM TYPECONSOMMATION
 package up.rde.modele;
 
 /**
- * Énumération représentant les types de consommation électrique des maisons.
- * Chaque type a une valeur de consommation fixe en kW.
+ * Représente les différents types de consommation électrique possibles
+ * pour une maison.
  */
 public enum TypeConsommation {
-    
-    BASSE(10),   
+    BASSE(10),
     NORMAL(20),
     FORTE(40);
-    
+
     private final int valeur;
-    
+
     /**
-     * Construit un type de consommation avec sa valeur en kW.
+     * Construit un type de consommation.
      * 
-     * @param valeur La consommation en kW
+     * @param valeur Demande électrique associée en kW
      */
-    private TypeConsommation(int valeur) {
+
+    TypeConsommation(int valeur) {
         this.valeur = valeur;
     }
-    
+
     /**
-     * Retourne la valeur de consommation en kW.
-     * 
-     * @return La consommation en kW
+     * @return la valeur de consommation en kW
      */
     public int getValeur() {
         return valeur;
     }
-    
+
     /**
-     * Retourne une chaîne avec tous les types de consommation disponibles.
-     * Format : "BASSE, NORMAL, FORTE"
-     * 
-     * @return La liste des types séparés par des virgules
-     */
-    public static String obtenirTypesDisponibles() {
-        StringBuilder sb = new StringBuilder();
-        TypeConsommation[] types = TypeConsommation.values();
-        
-        for (int i = 0; i < types.length; i++) {
-            sb.append(types[i].name());
-            if (i < types.length - 1) {
-                sb.append(", ");
-            }
-        }
-        
-        return sb.toString();
-    }
-    
-    /**
-     * Vérifie si une chaîne correspond à un TypeConsommation valide.
-     * La vérification est insensible à la casse.
+     * Vérifie si une chaîne correspond à un type de consommation valide.
      * 
      * @param type La chaîne à vérifier
-     * @return true si le type existe, false sinon
+     * @return true si la chaîne correspond à un type existant, false sinon
      */
     public static boolean estTypeValide(String type) {
-        if (type == null) {
+        if (type == null)
+            return false;
+        try {
+            valueOf(type.toUpperCase());
+            return true;
+        } catch (IllegalArgumentException e) {
             return false;
         }
-        
-        String typeUpper = type.toUpperCase();
-        
-        for (TypeConsommation t : TypeConsommation.values()) {
-            if (t.name().equals(typeUpper)) {
-                return true;
-            }
-        }
-        
-        return false;
+    }
+
+    /**
+     * @return la liste des types de consommation disponibles sous forme de chaîne
+     */
+    public static String obtenirTypesDisponibles() {
+        return "BASSE, NORMAL, FORTE";
     }
 }

@@ -1,102 +1,200 @@
 package up.rde.ui;
 
+// CLASSE INTERFACEUTILISATEUR
+import java.io.IOException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.util.List;
 
 import up.rde.modele.ReseauElectrique;
+import up.rde.utilitaire.ResolutionAutomatique;
 import up.rde.modele.TypeConsommation;
-import up.rde.algo.CalculateurCout;
+import up.rde.utilitaire.CalculateurCout;
+import up.rde.fichier.SauvegarderReseau;
 
 /**
- * Interface utilisateur pour la gestion du réseau électrique.
- * Gère les interactions avec l'utilisateur via deux menus :
- * - Menu principal : création du réseau
- * - Menu gestion : manipulation du réseau créé
+ * Classe gérant l'interface utilisateur pour la configuration,
+ * la validation et la gestion d'un réseau électrique.
+ * 
+ * Elle peut fonctionner en mode textuel ou servir de backend pour l'interface
+ * graphique.
  */
+
 public class InterfaceUtilisateur {
-    
+
+    // Attribut
     private ReseauElectrique reseau;
     private Scanner sc;
-    
+    private double lambda;
+    private String nomFichierImporte;
+    private ResolutionAutomatique algo;
+
+    // Constructeurs
     /**
-     * Construit l'interface utilisateur avec un réseau vide.
+     * Constructeur par défaut.
+     * Initialise un nouveau réseau vide et utilise la valeur lambda par défaut.
      */
     public InterfaceUtilisateur() {
-        sc = new Scanner(System.in);
-        reseau = new ReseauElectrique();
+        this.sc = new Scanner(System.in);
+        this.reseau = new ReseauElectrique();
+        this.lambda = CalculateurCout.getLambdaDefaut();
+        this.algo = new ResolutionAutomatique(reseau, lambda);
     }
-    
+
     /**
-     * Affiche la bannière du programme.
+     * Constructeur avec réseau importé.
+     * 
+     * @param reseau  Réseau existant importé
+     * @param lambda  Valeur lambda associée
+     * @param fichier Nom du fichier source
      */
+    public InterfaceUtilisateur(ReseauElectrique reseau, double lambda, String fichier) {
+        this.sc = new Scanner(System.in);
+        this.reseau = reseau;
+        this.lambda = lambda;
+        this.nomFichierImporte = fichier;
+        this.algo = new ResolutionAutomatique(reseau, lambda);
+    }
+
+    // Méthodes d'affichages statiques
     public static void afficherBanniere() {
-        System.out.println("╔════════════════════════════════════════════╗");
+        System.out.println("\n╔════════════════════════════════════════════╗");
         System.out.println("║    RÉSEAU DE DISTRIBUTION D'ÉLECTRICITÉ    ║");
+        System.out.println("║          Université Paris Cité             ║");
         System.out.println("╚════════════════════════════════════════════╝\n");
     }
-    
+
     /**
-     * Affiche le menu principal.
-     * 
-     * @return Le texte du menu sous forme de chaîne
+     * Affiche le menu principal (création du réseau).
      */
     public static String afficherMenuPrincipal() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("\nMENU PRINCIPAL\n");
-        sb.append("______________________________________________\n\n");
-        sb.append("1) Ajouter un générateur\n");
-        sb.append("2) Ajouter une maison\n");
-        sb.append("3) Ajouter une connexion\n");
-        sb.append("4) Fin\n");
-        return sb.toString();
+        return "\nMENU PRINCIPAL\n" +
+                "______________________________________________\n\n" +
+                "1) Ajouter un générateur\n" +
+                "2) Ajouter une maison\n" +
+                "3) Ajouter une connexion\n" +
+                "4) Supprimer une connexion\n" +
+                "5) Fin\n";
     }
-    
+
     /**
-     * Affiche le menu de gestion.
+     * Affiche le menu de gestion après validation du réseau.
      * 
-     * @return Le texte du menu sous forme de chaîne
+     * @return Le texte du menu gestion
      */
     public static String afficherMenuGestion() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("\nMENU GESTION\n");
-        sb.append("______________________________________________\n\n");
-        sb.append("1) Calculer le coût du réseau électrique actuel\n");
-        sb.append("2) Modifier une connexion\n");
-        sb.append("3) Afficher le réseau\n");
-        sb.append("4) Fin\n");
-        return sb.toString();
+        return """
+                ╔═════════════════════════════════════════╗
+                ║            MENU GESTION                 ║
+                ╠═════════════════════════════════════════╣
+                ║  1) Calculer le coût du réseau actuel   ║
+                ║  2) Modifier une connexion              ║
+                ║  3) Afficher le réseau                  ║
+                ║  4) Fin (quitter le programme)          ║
+                ╚═════════════════════════════════════════╝
+                """;
     }
-    
+
     /**
-     * Lit un entier au clavier avec gestion d'erreur.
-     * Redemande jusqu'à obtenir un entier valide.
+     * Affiche le menu de résolution (fichier).
      * 
-     * @param s Le scanner à utiliser
-     * @return L'entier saisi par l'utilisateur
+     * @return Le texte du menu résolution
      */
-    public static int lireEntierClavier(Scanner s) {
-        while (true) {
-            try {
-                System.out.print("Faites votre choix : ");
-                int choix = s.nextInt();
-                s.nextLine();
-                return choix;
-            } catch (InputMismatchException e) {
-                System.out.println("Erreur : Veuillez entrer un entier\n");
-                s.nextLine();
-            }
+
+    public static String afficherMenuFichier() {
+        return "\nMENU RÉSOLUTION\n" +
+                "______________________________________________\n\n" +
+                "1) Résolution automatique\n" +
+                "2) Sauvegarder la solution actuelle\n" +
+                "3) Fin\n";
+    }
+
+    /**
+     * Affiche le menu de choix du mode de lancement.
+     * 
+     * @return Le texte du menu mode de lancement
+     */
+    public static String afficherModeLancement() {
+        return "\nMODE DE LANCEMENT\n" +
+                "______________________________________________\n\n" +
+                "1) Interface textuelle (Terminal)\n" +
+                "2) Interface graphique (JavaFX)\n";
+    }
+
+    /** Affiche une bannière avant optimisation du réseau. */
+    public static void afficherAvtOptimisationBanniere() {
+        System.out.println("\n╔═════════════════════════════════════╗");
+        System.out.println("║           COÛT INITIAL              ║");
+        System.out.println("╚═════════════════════════════════════╝\n");
+    }
+
+    /** Affiche une bannière après optimisation du réseau. */
+    public static void afficherApresOptimisationBanniere() {
+        System.out.println("\n╔════════════════════════════════════════╗");
+        System.out.println("║         COÛT APRÈS OPTIMISATION        ║");
+        System.out.println("╚════════════════════════════════════════╝\n");
+    }
+
+    /** Affiche un message de fin de programme. */
+
+    public static void messageFinProgramme() {
+        System.out.println("\n╔════════════════════════════════════════════╗");
+        System.out.println("║    Merci d'avoir utilisé notre programme   ║");
+        System.out.println("║              À bientôt !                   ║");
+        System.out.println("╚════════════════════════════════════════════╝\n");
+    }
+
+    // Méthodes d'affichage d'instance
+
+    /**
+     * Affiche le réseau actuel.
+     * 
+     * @see ReseauElectrique#toString()
+     */
+
+    public void afficherReseau() {
+        System.out.println(" \n╔════════════════════════════════════════════╗");
+        System.out.println("║        AFFICHAGE DU RÉSEAU ÉLECTRIQUE      ║");
+        System.out.println("╚════════════════════════════════════════════╝\n");
+        System.out.println(reseau.toString());
+    }
+
+    /** Affiche le coût du réseau avant optimisation. */
+    public void afficherCoutAvantOptimisation() {
+        afficherAvtOptimisationBanniere();
+        System.out.println(algo.afficherDetailsCout());
+    }
+
+    // Méthodes de lecture clavier statiques
+
+    /**
+     * Lit un entier depuis le scanner.
+     * 
+     * @param s Scanner utilisé
+     * @return l'entier lu
+     * @throws InputMismatchException si l'entrée n'est pas un entier
+     */
+
+    public static int lireEntierClavier(Scanner s) throws InputMismatchException {
+        System.out.print("Votre choix : ");
+        if (s.hasNextInt()) {
+            int choix = s.nextInt();
+            s.nextLine();
+            return choix;
+        } else {
+            s.nextLine();
+            throw new InputMismatchException("Veuillez entrer un nombre entier");
         }
     }
-    
+
     /**
-     * Lit une chaîne de caractères au clavier avec gestion d'erreur.
-     * Redemande jusqu'à obtenir une chaîne non vide.
+     * Lit une chaîne depuis le scanner.
      * 
-     * @param s Le scanner à utiliser
-     * @param message Le message à afficher
-     * @return La chaîne saisie par l'utilisateur (sans espaces avant/après)
+     * @param s       Scanner utilisé
+     * @param message Message à afficher pour inviter la saisie
+     * @return la chaîne saisie non vide
      */
+
     public static String lireChaineClavier(Scanner s, String message) {
         while (true) {
             System.out.print(message);
@@ -109,215 +207,388 @@ public class InterfaceUtilisateur {
     }
 
     /**
-     * Sépare une chaîne en exactement deux parties sur les espaces.
-     * Exemple : "M1 NORMAL" → ["M1", "NORMAL"]
+     * Sépare une ligne en exactement deux parties.
      * 
-     * @param ligne La chaîne à séparer
-     * @param messageErreur Le message d'erreur à afficher si le format est incorrect
-     * @return Un tableau de 2 éléments
-     * @throws IllegalArgumentException si la chaîne ne contient pas exactement 2 éléments
+     * @param ligne         Ligne à séparer
+     * @param messageErreur Message d'erreur si la séparation échoue
+     * @return tableau contenant les deux parties
+     * @throws IllegalArgumentException si la ligne ne contient pas exactement deux
+     *                                  éléments
      */
+
     public static String[] separerDeux(String ligne, String messageErreur) {
-        String[] parts = ligne.trim().split("\\s+"); //Enlève espace debut et fin et entre \\s --> caractère blanc (tab, espace saut de ligne..) et + 1 ou plus
-        
+        String[] parts = ligne.trim().split("\\s+");
         if (parts.length != 2) {
             throw new IllegalArgumentException(messageErreur);
         }
-        
         return parts;
     }
 
+    // Méthodes de gestion des menus
     /**
-     * Lance le menu principal permettant de créer le réseau.
-     * Boucle jusqu'à ce que l'utilisateur valide le réseau (option 4).
-     */
-    public void lancerMenuPrincipal() {
-        afficherBanniere();
-        
-        boolean estValide = false;
-        
-        while (!estValide) {
-            System.out.println(afficherMenuPrincipal());
-            int choix = lireEntierClavier(sc);
-            
-            switch (choix) {
-                case 1:
-                    gererAjoutGenerateur();
-                    break;
-                case 2:
-                    gererAjoutMaison();
-                    break;
-                case 3:
-                    gererAjoutConnexion();
-                    break;
-                case 4:
-                    estValide = gererValidationMenuPrincipal();
-                    break;
-                default:
-                    System.out.println("Erreur : Veuillez entrer un entier entre 1 et 4\n");
-            }
-        }
-    }
-    
-    /**
-     * Gère l'ajout d'un générateur.
-     * Redemande jusqu'à obtenir des données valides.
-     */
-    private void gererAjoutGenerateur() {
-        boolean ajouter = false;
-        
-        do {
-            String input = lireChaineClavier(sc, "Entrez nom et capacité (ex: G1 60) : ");
-            
-            try {
-                String[] resultat = separerDeux(input, "Format incorrect");
-                int capacite = Integer.parseInt(resultat[1]);
-                
-                boolean misAJour = reseau.ajouterGenerateur(resultat[0], capacite);
-                
-                if (misAJour) {
-                    System.out.println("Le générateur '" + resultat[0] + "' a été mis à jour\n");
-                } else {
-                    System.out.println("Le générateur '" + resultat[0] + "' a été créé avec succès\n");
-                }
-                
-                ajouter = true;
-                
-            } catch (NumberFormatException e) {
-                System.out.println("Erreur : La capacité doit être un nombre entier\n");
-            } catch (IllegalArgumentException e) {
-                System.out.println("Erreur : " + e.getMessage() + "\n");
-            }
-        } while (!ajouter);
-    }
-    
-    /**
-     * Gère l'ajout d'une maison.
-     * Redemande jusqu'à obtenir des données valides.
-     */
-    private void gererAjoutMaison() {
-        boolean ajouter = false;
-        
-        do {
-            String types = TypeConsommation.obtenirTypesDisponibles(); // "BASSE, NORMAL, FORTE"
-            String input = lireChaineClavier(sc, 
-                "Entrez nom et type (" + types + ") (ex: M1 BASSE) : ");
-            
-            try {
-                String[] resultat = separerDeux(input, "Format incorrect");
-                String typeStr = resultat[1].toUpperCase();
-                
-                if (!TypeConsommation.estTypeValide(typeStr)) {
-                    System.out.println("Erreur : Type invalide. Utilisez : " + types + "\n");
-                    continue;
-                }
-                
-                TypeConsommation type = TypeConsommation.valueOf(typeStr); //à revoir
-                boolean misAJour = reseau.ajouterMaison(resultat[0], type);
-                
-                if (misAJour) {
-                    System.out.println("La maison '" + resultat[0] + "' a été mise à jour\n");
-                } else {
-                    System.out.println("La maison '" + resultat[0] + "' a été créée avec succès\n");
-                }
-                
-                ajouter = true;
-                
-            } catch (IllegalArgumentException e) {
-                System.out.println("Erreur : " + e.getMessage() + "\n");
-            }
-        } while (!ajouter);
-    }
-    
-    /**
-     * Gère l'ajout d'une connexion.
-     * Redemande jusqu'à obtenir des données valides.
-     */
-    private void gererAjoutConnexion() {
-        boolean ajouter = false;
-        
-        do {
-            String input = lireChaineClavier(sc, "Entrez une connexion (ex: M1 G1) : ");
-            
-            try {
-                String[] resultat = separerDeux(input, "Format incorrect");
-                boolean etaitConnectee = reseau.ajouterConnexion(resultat[0], resultat[1]);
-                
-                if (etaitConnectee) {
-                    System.out.println("Connexion modifiée avec succès\n");
-                } else {
-                    System.out.println("Connexion créée avec succès\n");
-                }
-                
-                ajouter = true;
-                
-            } catch (IllegalArgumentException e) {
-                System.out.println("Erreur : " + e.getMessage() + "\n");
-            }
-        } while (!ajouter);
-    }
-    
-    /**
-     * Gère la validation du réseau avant de passer au menu de gestion.
+     * Demande à l'utilisateur de choisir le mode de lancement : textuel ou
+     * graphique.
      * 
-     * @return true si le réseau est valide, false sinon
+     * @return true si mode textuel, false si mode graphique
      */
-    private boolean gererValidationMenuPrincipal() {
+
+    public static boolean modeDeLancement() {
+        afficherBanniere();
+        Scanner sc = new Scanner(System.in);
+
+        while (true) {
+            try {
+                System.out.println(afficherModeLancement());
+                int choix = lireEntierClavier(sc);
+
+                if (choix == 1) {
+                    return true;
+                } else if (choix == 2) {
+                    return false;
+                } else {
+                    System.out.println("Erreur : Veuillez entrer un nombre entre 1 ou 2\n");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println(e.getMessage() + "\n");
+            }
+        }
+    }
+
+    /**
+     * Lance le programme en mode textuel.
+     * 
+     * @throws IOException en cas de problème lors de la sauvegarde
+     */
+    public void lancer() throws IOException {
+        lancerMenuPrincipal();
+        messageFinProgramme();
+        sc.close();
+
+    }
+
+    /**
+     * Menu principal pour ajouter des générateurs, maisons, connexions et valider
+     * le réseau.
+     */
+
+    public void lancerMenuPrincipal() {
+        boolean estValider = false;
+        String input;
+
+        while (!estValider) {
+            System.out.println(afficherMenuPrincipal());
+
+            try {
+                int choix = lireEntierClavier(sc);
+
+                switch (choix) {
+                    case 1 -> {// Ajout générateur
+                        input = lireChaineClavier(sc, "Entrez nom et capacité (ex: G1 60) : ");
+                        try {
+                            System.out.println(gererAjoutGenerateur(input));
+                        } catch (IllegalArgumentException e) {
+                            System.out.println("Erreur : " + e.getMessage() + "\n");
+                        }
+                    }
+                    case 2 -> {// Ajout maison
+                        input = lireChaineClavier(sc, "Entrez nom et type ("
+                                + TypeConsommation.obtenirTypesDisponibles() + ") (ex: M1 BASSE) : ");
+                        try {
+                            System.out.println(gererAjoutMaison(input));
+                        } catch (IllegalArgumentException e) {
+                            System.out.println("Erreur : " + e.getMessage() + "\n");
+                        }
+                    }
+                    case 3 -> {// Ajout connexion
+                        input = lireChaineClavier(sc, "Entrez une connexion (ex: M1 G1 ou G1 M1) : ");
+                        try {
+                            System.out.println(gererAjoutConnexion(input));
+                        } catch (IllegalArgumentException e) {
+                            System.out.println("Erreur : " + e.getMessage() + "\n");
+                        }
+                    }
+                    case 4 -> { // Supprimer connexion
+                        input = lireChaineClavier(sc, "Entrez une connexion à supprimer (ex: M1 G1) : ");
+                        try {
+                            System.out.println(gererSuppressionConnexion(input));
+                        } catch (IllegalArgumentException e) {
+                            System.out.println("Erreur : " + e.getMessage() + "\n");
+                        }
+                    }
+                    case 5 -> { // Fin et validation
+                        try {
+                            boolean estValide = gererValidationMenuPrincipal(); // Valide et affiche le réseau
+                            if (estValide) {
+                                try {
+                                    lancerMenuResolution();
+                                    estValider = true;
+                                } catch (IOException e) {
+                                    System.out.println("Erreur lors du menu de résolution : " + e.getMessage());
+                                }
+                            }
+                        } catch (IllegalArgumentException e) {
+                            System.out.println("Erreur : " + e.getMessage() + "\n");
+                        }
+
+                    }
+                    default -> System.out.println("Erreur : Veuillez entrer un nombre entre 1 et 5\n");
+                }
+
+            } catch (InputMismatchException e) {
+                System.out.println("Erreur : " + e.getMessage() + "\n");
+            } catch (IllegalArgumentException e) {
+                System.out.println("Erreur : " + e.getMessage() + "\n");
+            }
+        }
+    }
+
+    /**
+     * Lance le menu de résolution et de sauvegarde.
+     * 
+     * @throws IOException si la sauvegarde échoue
+     */
+    public void lancerMenuResolution() throws IOException {
+        boolean quitter = false;
+
+        while (!quitter) {
+            System.out.println(afficherMenuFichier());
+
+            try {
+                int choix = lireEntierClavier(sc);
+
+                switch (choix) {
+                    case 1 -> {
+                        System.out.println(gererResolutionAutomatique());
+                    }
+                    case 2 -> {
+                        try {
+                            String nomFichier = lireChaineClavier(sc, "Entrez le nom du fichier de sauvegarde : ");
+                            System.out.println(gererSauvegarde(nomFichierImporte, nomFichier));
+                        } catch (IOException e) {
+                            System.out.println("Erreur : " + e.getMessage() + "\n");
+                        }
+                    }
+                    case 3 -> {
+                        quitter = true;
+                    }
+                    default -> System.out.println("Erreur : Veuillez entrer un nombre entre 1 et 3.\n");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Erreur : " + e.getMessage() + "\n");
+            }
+        }
+    }
+
+    // Méthodes des options des menus
+    /**
+     * Ajoute ou met à jour un générateur dans le réseau.
+     * 
+     * @param input chaîne contenant "nom capacité" (ex: G1 60)
+     * @return message de succès ou mise à jour
+     * @throws IllegalArgumentException si format incorrect ou capacité invalide
+     */
+
+    public String gererAjoutGenerateur(String input) {
+
+        try {
+            String[] resultat = separerDeux(input,
+                    "Veuillez entrer un nom et la capacité maximale du générateur. ");
+            int capacite = Integer.parseInt(resultat[1]);
+
+            boolean misAJour = reseau.ajouterGenerateur(resultat[0], capacite);
+
+            if (misAJour) {
+                return "Le générateur '" + resultat[0] + "' a été mis à jour (capacité: " + capacite + " kW)\n";
+            } else {
+                return "Le générateur '" + resultat[0] + "' a été créé avec succès (capacité: " + capacite + " kW)\n";
+            }
+
+        } catch (NumberFormatException e) {
+            throw new NumberFormatException("La capacité doit être un nombre entier");
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
+    }
+
+    /**
+     * Ajoute ou met à jour une maison dans le réseau.
+     * 
+     * @param input chaîne contenant "nom type" (ex: M1 BASSE)
+     * @return message de succès ou mise à jour
+     * @throws IllegalArgumentException si format incorrect ou type invalide
+     */
+
+    public String gererAjoutMaison(String input) {
+
+        try {
+            String[] resultat = separerDeux(input,
+                    "Veuillez entrer le nom et le type de consommation de la maison.");
+            String typeStr = resultat[1].toUpperCase();
+
+            if (!TypeConsommation.estTypeValide(typeStr)) {
+                throw new IllegalArgumentException(
+                        "Type invalide. Utilisez : " + TypeConsommation.obtenirTypesDisponibles());
+            }
+
+            TypeConsommation type = TypeConsommation.valueOf(typeStr);
+            boolean misAJour = reseau.ajouterMaison(resultat[0], type);
+
+            if (misAJour) {
+                return "La maison '" + resultat[0] + "' a été mise à jour (type: " + type + ", " + type.getValeur()
+                        + " kW)\n";
+            } else {
+                return "La maison '" + resultat[0] + "' a été créée avec succès (type: " + type + ", "
+                        + type.getValeur() + " kW)\n";
+            }
+
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
+    }
+
+    /**
+     * Ajoute une connexion maison-générateur.
+     * 
+     * @param input chaîne contenant "maison générateur"
+     * @return message de succès
+     * @throws IllegalArgumentException si connexion existante ou format incorrect
+     */
+
+    public String gererAjoutConnexion(String input) {
+        try {
+            String[] resultat = separerDeux(input, "Le format attendu est 'maison générateur'");
+            boolean existait = reseau.ajouterConnexion(resultat[0], resultat[1]);
+
+            if (existait) {
+                // La connexion existait
+                throw new IllegalArgumentException("Connexion existante, aucune modification effectuée\n");
+            } else {
+                // Nouvelle connexion créée
+                return "Connexion créée avec succès\n";
+            }
+
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
+    }
+
+    /**
+     * Supprime une connexion maison-générateur.
+     * 
+     * @param input chaîne contenant "maison générateur"
+     * @return message de succès
+     * @throws IllegalArgumentException si format incorrect ou connexion inexistante
+     */
+    public String gererSuppressionConnexion(String input) {
+
+        try {
+            String[] resultat = separerDeux(input, "Le format attendu est 'maison générateur'");
+            reseau.supprimerConnexion(resultat[0], resultat[1]); // ← 2 paramètres
+
+            return "Connexion supprimée avec succès\n";
+
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
+    }
+
+    /**
+     * Valide que le réseau est complet et cohérent avant le menu gestion.
+     * 
+     * @return true si le réseau est valide
+     * @throws IllegalArgumentException si réseau incomplet ou incohérent
+     */
+    public boolean gererValidationMenuPrincipal() {
         if (!reseau.estNonVide()) {
-            System.out.println("Erreur : Le réseau doit contenir au moins une maison et un générateur\n");
-            return false;
+            throw new IllegalArgumentException("Le réseau doit contenir au moins une maison et un générateur");
         }
-        
+
+        if (reseau.getDemandeTotaleMaison() > reseau.getCapaciteTotaleGenerateur()) {
+            throw new IllegalArgumentException(
+                    "La demande totale des maisons " + "dépasse la capacité totale des générateurs");
+        }
+
         List<String> maisonsNonConnectees = reseau.getMaisonsNonConnectees();
-        
         if (!maisonsNonConnectees.isEmpty()) {
-            System.out.println("Erreur : Certaines maisons ne sont pas connectées");
-            System.out.println("Maisons concernées : " + maisonsNonConnectees + "\n");
-            return false;
+            throw new IllegalArgumentException(
+                    "Certaines maisons ne sont pas connectées à un générateur : " + maisonsNonConnectees);
         }
-        
-        System.out.println("Réseau validé avec succès !\n");
+
+        System.out.println("\nRéseau validé avec succès !");
+        afficherReseau();
+        afficherCoutAvantOptimisation();
+
         return true;
     }
-    
+
     /**
-     * Lance le menu de gestion du réseau.
-     * Boucle jusqu'à ce que l'utilisateur quitte (option 4).
+     * Exécute l'optimisation automatique du réseau.
+     * 
+     * @return le détail des coûts après optimisation
      */
-    public void lancerMenuGestion() {
-        boolean termine = false;
-        
-        while (!termine) {
-            System.out.println(afficherMenuGestion());
-            int choix = lireEntierClavier(sc);
-            
-            switch (choix) {
-                case 1:
-                    System.out.println(CalculateurCout.coutInstanceReseau(reseau));
-                    break;
-                case 2:
-                    System.out.println("(Modification de connexion - à implémenter dans la partie 2)\n");
-                    break;
-                case 3:
-                    System.out.println("(Afficher le réseau - à implémenter)\n");
-                    break;
-                case 4:
-                    termine = true;
-                    break;
-                default:
-                    System.out.println("Erreur : Veuillez entrer un entier entre 1 et 4\n");
-            }
+
+    public String gererResolutionAutomatique() {
+
+        algo.executer();
+        afficherReseau();
+        afficherApresOptimisationBanniere();
+
+        return algo.afficherDetailsCout();
+    }
+
+    /**
+     * Sauvegarde le réseau dans un fichier.
+     * 
+     * @param nomFichierImporte nom du fichier source
+     * @param nomFichier        nom du fichier de sauvegarde
+     * @return message de succès
+     * @throws IOException              si la sauvegarde échoue
+     * @throws IllegalArgumentException si nomFichier invalide ou réseau vide
+     */
+    public String gererSauvegarde(String nomFichierImporte, String nomFichier) throws IOException {
+
+        if (nomFichier == null || nomFichier.trim().isEmpty()) {
+            throw new IllegalArgumentException("Le nom du réseau de sauvegarde ne peut pas être vide");
+        }
+
+        // Ajouter .txt automatiquement si pas d'extension
+        if (!nomFichier.endsWith(".txt")) {
+            nomFichier += ".txt";
+        }
+
+        if (reseau.getConnexions().isEmpty()) {
+            throw new IllegalArgumentException("Le réseau est vide");
+        }
+
+        try {
+            return SauvegarderReseau.sauvegarder(reseau, nomFichierImporte, nomFichier);
+        } catch (IOException e) {
+            throw new IOException(e.getMessage());
         }
     }
-    
-    /**
-     * Lance l'application complète.
-     * Exécute successivement le menu principal puis le menu de gestion.
-     */
-    public void lancer() {
-        lancerMenuPrincipal();
-        lancerMenuGestion();
-        sc.close();
-        System.out.println("\nMerci d'avoir utilisé notre programme. À bientôt !");
+
+    // Getters
+
+    /** @return le réseau électrique courant */
+    public ReseauElectrique getReseau() {
+        return reseau;
     }
+
+    /** @return true si un fichier a été importé */
+
+    public boolean estFichierImporte() {
+        return nomFichierImporte != null;
+    }
+
+    /** @return la valeur de lambda utilisée */
+    public double getLambda() {
+        return lambda;
+    }
+
+    /** @return le nom du fichier importé */
+
+    public String getNomFichierImporte() {
+        return nomFichierImporte;
+    }
+
 }

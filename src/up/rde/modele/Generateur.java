@@ -1,38 +1,67 @@
+
+// CLASSE GENERATEUR
+
 package up.rde.modele;
 
-import java.util.List;
-import java.util.Vector;
-
+/**
+ * Représente un générateur électrique dans le réseau.
+ * Chaque générateur a un nom unique et une capacité maximale.
+ */
 public class Generateur {
     private String nom;
     private int capacite;
-    private List<Maison> maisons;
-    
+
+    /**
+     * Construit un nouveau générateur.
+     * 
+     * @param nom      Le nom unique du générateur (non null, non vide)
+     * @param capacite La capacité maximale en kW (> 0)
+     * @throws IllegalArgumentException si nom null/vide ou capacité inférieur ou égale 0
+     */
     public Generateur(String nom, int capacite) {
-        this.nom = nom;
+        if (nom == null || nom.trim().isEmpty()) {
+            throw new IllegalArgumentException("Le nom du générateur ne peut pas être vide");
+        }
+        if (capacite <= 0) {
+            throw new IllegalArgumentException("La capacité doit être strictement positive");
+        }
+        this.nom = nom.trim();
         this.capacite = capacite;
-        this.maisons = new Vector<>();
     }
-    
-    // getters et setters
+
+    /**
+     * @return le nom du générateur
+     */
     public String getNom() {
         return nom;
     }
-    
+
+    /**
+     * @return la capacité maximale du générateur (en kW)
+     */
     public int getCapacite() {
         return capacite;
     }
-    
+
+    /**
+     * Modifie la capacité du générateur.
+     * 
+     * @param capacite nouvelle capacité (> 0)
+     * @throws IllegalArgumentException si la capacité est invalide
+     */
+
     public void setCapacite(int capacite) {
+        if (capacite <= 0) {
+            throw new IllegalArgumentException("La capacité doit être strictement positive");
+        }
         this.capacite = capacite;
     }
-    
-    public List<Maison> getMaisons() {
-        return maisons;
-    }
-    
+
+    /**
+     * Représentation textuelle du générateur.
+     */
     @Override
     public String toString() {
-    	return ""; //Implémenter
+        return nom + " (" + capacite + " kW)";
     }
 }
