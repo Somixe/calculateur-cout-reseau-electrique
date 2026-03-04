@@ -174,3 +174,5 @@ Le projet a été réalisé par :
 * Maxime Huang [@Somixe](https://github.com/Somixe)
 * Kavivethan Ambigabady [@Kavi](https://github.com/Devnew14)
 * Philippe Zacko Yabingui [@PhilippeZacko](https://github.com/PhilippeZacko)
+
+Responsable du module, **Jérôme Delobelle**. 
