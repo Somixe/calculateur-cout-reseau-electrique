@@ -4,6 +4,13 @@ Ce projet est réalisé dans **le cadre du cours de Programmation Avancée** en 
 
 Il s’agit d’une **application en Java permettant de modéliser, de visualiser et d’optimiser un réseau de distribution électrique**. Le système gère des générateurs d'électricité, des maisons avec différents niveaux de consommation et optimise automatiquement les connexions pour minimiser le coût total du réseau.
 
+## Documentation du Projet
+Pour une meilleure compréhension et utilisation du projet, veuillez consulter les documents suivants :
+
+* **[Présentation du Projet (PDF)](./presentation_projet.pdf)** : Vue d'ensemble et objectifs.
+* **[Projet - Partie 1](./projet_partie1.pdf)** : Spécifications initiales.
+* **[Projet - Partie 2](./projet_partie2.pdf)** : Détails techniques et avancés.
+
 ## Captures d’écran
 
 <div style="display: flex-wrap: wrap-row;">
