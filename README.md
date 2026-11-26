@@ -18,6 +18,8 @@ Pour une meilleure compréhension et utilisation du projet, veuillez consulter l
   <img src="ressources/capture_ecran/ajout_generateur_capture_ecran.png" width="400" />
   <img src="ressources/capture_ecran/affichage_reseau_capture_ecran.png" width="400" />
 </p>
+
+
 ## Arborescence du projet
 ```
 calculateur-cout-reseau-electrique/
