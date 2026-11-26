@@ -70,7 +70,9 @@ calculateur-cout-reseau-electrique/
 ## Utilisation
  
 Pour voir rapidement comment l'application fonctionne, consultez **la vidéo de démonstration :**
-[Regarder la vidéo](./demonstration.mp4)
+
+https://github.com/user-attachments/assets/bca981ed-4acc-4415-b072-534ea41f2471
+
  
 ---
  
